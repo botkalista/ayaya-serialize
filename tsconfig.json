@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "ES2015",
+        "lib": ["ES6","DOM"],
+        "experimentalDecorators": true
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
