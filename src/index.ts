@@ -28,7 +28,7 @@ namespace Serialization {
             const propsToSerialize = this[Serializable.serializeSymbol];
             for (const key of propsToSerialize) {
                 const target = this[key];
-                if (target.getUpdates) {
+                if (target && target.getUpdates) {
                     const v = target.getUpdates();
                     if (v && Object.keys(v).length > 0) {
                         this[Serializable.updateSymbol].push({ key, value: v });
@@ -120,50 +120,58 @@ namespace Client {
 
 //* --------------- TESTS --------------------------------------
 
-class Weapon extends Serialization.Serializable {
-    @Serialization.Serialize()
-    atk: number;
-    @Serialization.Serialize()
-    test: number;
-    constructor() {
-        super();
-        this.atk = 10;
-        this.test = 100;
+
+function tests() {
+    class Weapon extends Serialization.Serializable {
+        @Serialization.Serialize()
+        atk: number;
+        @Serialization.Serialize()
+        test: number;
+        constructor() {
+            super();
+            this.atk = 10;
+            this.test = 100;
+        }
     }
+
+    class Player extends Serialization.Serializable {
+        @Serialization.Serialize()
+        name: string = 'NoName';
+        @Serialization.Serialize()
+        def: number = 10;
+        @Serialization.Serialize()
+        weapon: Weapon = new Weapon();
+        constructor() {
+            super();
+        }
+    }
+
+
+    const p = new Player();
+
+    console.log(p.serialize());
+
+
+    class ClientPlayer extends Client.Composite {
+        constructor() {
+            super();
+        }
+    }
+
+    const c = new ClientPlayer();
+    c.update(p.getUpdates());
+    p.clearUpdates();
+    console.log('------')
+
+    p.weapon.test = 1;
+
+    const updatesAfter = p.getUpdates();
+
+    c.update(updatesAfter);
+    console.log(c);
 }
 
-class Player extends Serialization.Serializable {
-    @Serialization.Serialize()
-    name: string = 'NoName';
-    @Serialization.Serialize()
-    def: number = 10;
-    @Serialization.Serialize()
-    weapon: Weapon = new Weapon();
-    constructor() {
-        super();
-    }
+export {
+    Serialization,
+    Client
 }
-
-
-const p = new Player();
-
-console.log(p.serialize());
-
-
-class ClientPlayer extends Client.Composite {
-    constructor() {
-        super();
-    }
-}
-
-const c = new ClientPlayer();
-c.update(p.getUpdates());
-p.clearUpdates();
-console.log('------')
-
-p.weapon.test = 1;
-
-const updatesAfter = p.getUpdates();
-
-c.update(updatesAfter);
-console.log(c);
